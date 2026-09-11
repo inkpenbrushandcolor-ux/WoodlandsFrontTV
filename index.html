@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- กัน cache: บังคับจอดึงของสดทุกครั้งที่เปิด -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Woodlands Signage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  #player {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;   /* เต็มจอ ไม่มีขอบดำ — ถ้าอยากเห็นเต็มคลิปไม่ crop เปลี่ยนเป็น contain */
+    background: #000;
+  }
+</style>
+</head>
+<body>
+  <video id="player" muted autoplay playsinline></video>
+<script>
+  // ==========================================================
+  //  แก้ตรงนี้ที่เดียว: ใส่ชื่อไฟล์วิดีโอตามลำดับที่อยากให้เล่น
+  //  วางไฟล์ .mp4 ไว้โฟลเดอร์เดียวกับ index.html นี้
+  // ==========================================================
+  const PLAYLIST = [
+    "WL_TV.mp4"
+  ];
+  // ==========================================================
+  const video = document.getElementById("player");
+  let index = 0;
+  // กัน cache ระดับไฟล์: ต่อ ?t=เวลา ท้ายชื่อไฟล์ทุกครั้ง
+  function srcOf(name) {
+    return name + "?t=" + Date.now();
+  }
+  function playCurrent() {
+    video.src = srcOf(PLAYLIST[index]);
+    video.load();
+    const p = video.play();
+    if (p !== undefined) {
+      p.catch(function () {
+        setTimeout(playCurrent, 1000);
+      });
+    }
+  }
+  // เล่นจบคลิป -> ไปคลิปถัดไป
+  video.addEventListener("ended", function () {
+    index = (index + 1) % PLAYLIST.length;
+    playCurrent();
+  });
+  // กันค้าง: ไฟล์เสีย/โหลดพัง ให้ข้ามไปคลิปถัดไป
+  video.addEventListener("error", function () {
+    index = (index + 1) % PLAYLIST.length;
+    setTimeout(playCurrent, 2000);
+  });
+  // เริ่มเล่นทันทีที่หน้าโหลด
+  window.addEventListener("load", playCurrent);
+</script>
+</body>
+</html>
